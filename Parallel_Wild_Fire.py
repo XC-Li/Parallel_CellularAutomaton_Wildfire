@@ -1,6 +1,8 @@
 # Wild Fire Simulation
 
+import os
 import sys
+import time
 import math
 import random
 import copy
@@ -120,9 +122,18 @@ def colormap(title, array):
 
 def print_forest(title,forest):
     print (title)
-    for i in range(n_row):
+    for i in range(len(forest)):
         for j in range(n_col):
-            sys.stdout.write(str(forest[i][j]))
+            if not isinstance(title, int):
+                sys.stdout.write(str(forest[i][j]))
+            elif forest[i][j] == 1:
+                sys.stdout.write("\033[1;34;40m 1\033[0m")  # blue for not burnable
+            elif forest[i][j] == 2:
+                sys.stdout.write("\033[1;32;40m 2\033[0m")  # green for burnable
+            elif forest[i][j] == 3:
+                sys.stdout.write("\033[1;31;40m 3\033[0m")  # red for burning
+            else:
+                sys.stdout.write("\033[1;30;40m 4\033[0m")  # black for burned down
         sys.stdout.write("\n")
     print ("--------------------")
 
@@ -232,19 +243,19 @@ if rank == 0:
         colormap("Density Map", density_matrix)
         colormap("Altitude Map", altitude_matrix)
     else:
-        print("Vegetation Map")
+
         print_forest("Vegetation Map", vegetation_matrix)
-        print("Density Map")
         print_forest("Density Map", density_matrix)
-        print("Altitude Map")
-        print_forest("Density Map", altitude_matrix)
+        print_forest("Altitude Map", altitude_matrix)
     print("This is the wind matrix:")
     for row in wind_matrix:
         print(row)
+time.sleep(1)
 
 
 ims = []
-for i in tqdm(range(generation)):
+# for i in tqdm(range(generation)):
+for i in range(generation):  # tqdm will damage the visualization in Terminal
     sub_forest = copy.deepcopy(update_forest(sub_forest))
     # [parallel] message passing function
     if rank == 0:
@@ -260,6 +271,7 @@ for i in tqdm(range(generation)):
     temp_grid = comm.gather(np_temp_grid, root=0)
 
     # [parallel] only worker 0 do the visualize
+
     if rank == 0:
         new_forest = np.vstack(temp_grid)
 
@@ -269,9 +281,15 @@ for i in tqdm(range(generation)):
             ims.append([im])
             # colormap(i,new_forest)
         else:
-            # print_forest(i, new_forest)
+            # os.system("clear")
+            time.sleep(1)
             print("-----------Generation:", i, "---------------")
-            print(new_forest)
+            list_forest = new_forest.tolist()
+            # print (list_forest)
+            print_forest(i,list_forest)
+            # for components_of_forest in list_forest:
+            #     print_forest(i, components_of_forest)
+            # print(new_forest)
 
 
 if visual and rank == 0:
