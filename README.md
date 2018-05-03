@@ -43,8 +43,12 @@ Or you can do some custom changes on the environment initial functions:
 After loading the module, you can use `mpirun -n [n] python Parallel_Wild_Fire.py` to run this code.
 You can specify the number of workers in `n` if you have multiple CPU.
 
-## Maths Model
-The model we use here is based on the research paper: "A cellular automata model for forest fire spread prediction: The case
+## Interesting Findings
+
+
+# Technical Detail
+## Cellular Automaton Model
+The model I use here is based on the research paper: "A cellular automata model for forest fire spread prediction: The case
 of the wildfire that swept through Spetses Island in 1990"
 
 Each cell has 4 states:
@@ -64,18 +68,20 @@ This rule implies that the state of an empty cell that has been burned down in t
 Rule 4: IF state (i,j,t) = 3 THEN state (i ± 1, j ± 1, t + 1) = 3 with a probability pburn.
 **I changed Rule to IF state (i,j,t) = 3 THEN state (i,j,t + 1) = 4 with probability `1-p_continue_burn`**
 
-And we used the following formulas to determine p<sub>burn</sub>:
-p<sub>burn</sub>=p<sub>h</sub>(1+p<sub>veg</sub>)(1+p<sub>den</sub>)p<sub>w</sub>p<sub>s</sub>  
-**Effect of the wind speed and direction    **
+And I used the following formulas to determine p<sub>burn</sub>:
+p<sub>burn</sub>=p<sub>h</sub>(1+p<sub>veg</sub>)(1+p<sub>den</sub>)p<sub>w</sub>p<sub>s</sub>    
+
+**Effect of the wind speed and direction**  
 p<sub>w</sub> = exp(c<sub>1</sub>V)f<sub>t</sub>,   
 f<sub>t</sub> = exp(Vc<sub>2</sub>(cos(&theta;)-1))  
 &theta; is the angle between the direction of the fire propagation and the direction
-of the wind.  
-**Effect of the ground elevation  **
+of the wind.    
+
+**Effect of the ground elevation**    
 P<sub>s</sub> = exp(a&theta;<sub>s</sub>)  
 &theta;<sub>s</sub> = tan-1[(E<sub>1</sub>-E<sub>2</sub>)/l]
 
-Table for p<sub>den</sub>:
+**Table for p<sub>den</sub>**  
 
 |Category|Density|p<sub>den</sub>|
 |----|----|----|
@@ -83,7 +89,7 @@ Table for p<sub>den</sub>:
 |2|Normal|0|
 |3|Dense|0.3|
 
-Table for p<sub>veg</sub>
+**Table for p<sub>veg</sub>**  
 
 |Category|Type|p<sub>veg</sub>|
 |----|----|----|
@@ -91,7 +97,7 @@ Table for p<sub>veg</sub>
 |2|Thickets|0|
 |3|Hallepo-pine|0.4|
 
-Other parameters
+**Table for other parameters**
 
 |Parameter|Value|
 |----|----|
@@ -101,6 +107,13 @@ Other parameters
 |c<sub>2</sub>|0.131|
 
 ## Implementation
+I implemented the model in the research paper to the code, and this is the structure of the program. 
+![png](/images/Program_Structure.png)
 
+## Parallel Design
+The idea of parallel with MPI(Message Passing Interface) is also simple:
+1. Assign a part of the full grid to each worker.
+![png](images/parallel_design.png)
+2. Let the worker exchange the top and bottom row after each iteration.
+![png](images/parallel_design2.png)
 
-## Parallel Version
