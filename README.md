@@ -44,5 +44,7 @@ After loading the module, you can use `mpirun -n [n] python Parallel_Wild_Fire.p
 You can specify the number of workers in `n` if you have multiple CPU.
 
 ## Model and Implimentation
-
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+居中格式: $$xxx$$
+$$x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$$
 ## Parallel Version
