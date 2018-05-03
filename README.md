@@ -44,30 +44,51 @@ After loading the module, you can use `mpirun -n [n] python Parallel_Wild_Fire.p
 You can specify the number of workers in `n` if you have multiple CPU.
 
 ## Interesting Findings
+No special environment: boundary of fire is round(Visualize in matplotlab and pure text)
+<img src="images/no_special_environment.gif" width="300" height="300"><img src="images/pure_text.gif" width="300" height="300">
 
-<img src="images/no_special_environment.gif" width="300" height="300">
+Different `p_continue_burn`: 0.1(Left) or 0.9(Right) affect the shape of boundary  
+<img src="images/p_continue_burn_0.1.gif" width="300" height="300"><img src="images/p_continue_burn_0.9.gif" width="300" height="300"> 
+
+`Density` is on: Fire is more likely to spread to high density area(Right 1/3)  
+![](images/density_map.JPG)<img src="images/density_on.gif" width="300" height="300">
+
+`vegetation` is on : Fire is more likely to spread to Hallepo-pine area (Right 1/3)  
+![](images/vegetation_map.JPG)<img src="images/vegetation_on.gif" width="300" height="300">
+
+`altitude` is on : Fire is more likely to spread to higher place(Right side)  
+![](images/altitude_map.JPG)<img src="images/altitude_on.gif" width="300" height="300">
+
+`wind` is on: Fire is affected by the north wind(From North to South)  
+<img src="images/wind_on.gif" width="300" height="300">
+
+All of the environment factor is on: `altitude` and `wind` are the most powerful factor
+<img src="images/all_on.gif" width="300" height="300">
+
+
+
 
 # Technical Detail
 ## Cellular Automaton Model
 The model I use here is based on the research paper: "A cellular automata model for forest fire spread prediction: The case
-of the wildfire that swept through Spetses Island in 1990"
+of the wildfire that swept through Spetses Island in 1990"  
 
-Each cell has 4 states:
+Each cell has 4 states:  
 State = 1: The cell contains no forest fuel. This state may describe the cells corresponding to parts of the city with no vegetation,
-rural areas with no vegetation etc. We assume that cells that are in this state cannot be burned.
-State = 2: The cell contains forest fuel that has not ignited.
-State = 3: The cell contains forest fuel that is burning.
-State = 4: The cell contained forest fuel that has been burned down.
+rural areas with no vegetation etc. We assume that cells that are in this state cannot be burned.  
+State = 2: The cell contains forest fuel that has not ignited.  
+State = 3: The cell contains forest fuel that is burning.  
+State = 4: The cell contained forest fuel that has been burned down.  
 
-These 4 states changes under these 4 rules:
-Rule 1: IF state (i,j,t) = 1 THEN state (i,j,t + 1) = 1.
-This rule implies that the state of a cell with no forest fuel (empty cell) remains the same and thus it cannot catch fire.
-Rule 2: IF state (i,j,t) = 3 THEN state (i,j,t + 1) = 4. 
-This rule implies that a burning cell at the current time step will be burned down at the next time step.
-Rule 3: IF state (i,j,t) = 4 THEN state (i,j,t + 1) = 4.
-This rule implies that the state of an empty cell that has been burned down in the previous step stays the same.
-Rule 4: IF state (i,j,t) = 3 THEN state (i ± 1, j ± 1, t + 1) = 3 with a probability pburn.
-**I changed Rule to IF state (i,j,t) = 3 THEN state (i,j,t + 1) = 4 with probability `1-p_continue_burn`**
+These 4 states changes under these 4 rules:  
+Rule 1: IF state (i,j,t) = 1 THEN state (i,j,t + 1) = 1.  
+This rule implies that the state of a cell with no forest fuel (empty cell) remains the same and thus it cannot catch fire.  
+Rule 2: IF state (i,j,t) = 3 THEN state (i,j,t + 1) = 4.   
+This rule implies that a burning cell at the current time step will be burned down at the next time step.  
+Rule 3: IF state (i,j,t) = 4 THEN state (i,j,t + 1) = 4.  
+This rule implies that the state of an empty cell that has been burned down in the previous step stays the same.  
+Rule 4: IF state (i,j,t) = 3 THEN state (i ± 1, j ± 1, t + 1) = 3 with a probability pburn.  
+**I changed Rule to IF state (i,j,t) = 3 THEN state (i,j,t + 1) = 4 with probability `1-p_continue_burn`**  
 
 And I used the following formulas to determine p<sub>burn</sub>:
 p<sub>burn</sub>=p<sub>h</sub>(1+p<sub>veg</sub>)(1+p<sub>den</sub>)p<sub>w</sub>p<sub>s</sub>    
