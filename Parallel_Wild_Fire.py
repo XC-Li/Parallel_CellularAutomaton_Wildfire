@@ -1,4 +1,12 @@
-# Wild Fire Simulation
+# Wild Fire Simulation Using Cellular Automaton and Parallel Computing
+# Designed By Xiaochi (George) Li
+# Final Project for High Performance Computing and Parallel Computing
+# Data Science @ George Washington University
+# May. 2018
+
+# Algorithm based on this paper:A cellular automata model for forest fire spread prediction: The case
+# of the wildfire that swept through Spetses Island in 1990
+# Author: A. Alexandridis a, D. Vakalis b, C.I. Siettos c,*, G.V. Bafas a
 
 # import os
 import sys
@@ -6,7 +14,7 @@ import time
 import math
 import random
 import copy
-import numpy as np
+import itertools
 # from tqdm import tqdm
 
 from mpi4py import MPI
@@ -16,32 +24,42 @@ rank = comm.Get_rank()
 stat = MPI.Status()
 
 try:
+    import numpy as np
     import matplotlib.pyplot as plt
     from matplotlib import cm
     from matplotlib import animation as animation
     visual = True
 except:
-    print("Error: This code need matplot to visualize!")
+    print("Error: This code need numpy and matplot to visualize!")
     visual = False
+
+
 
 if visual:
     fig = plt.figure()
 
-# initialize environment
-
-# number of rows and columns of grid
-n_row_total = 30
-n_row = n_row_total // size + 2
-n_col = 30
-generation = 15
 
 # ------------ Change the code below here for different initial environment ---------
+
+# -------------Quick Change Begin
+# number of rows and columns of full grid and the generations
+n_row_total = 300
+n_col = 300
+generation = 300
+
+# the possibility a cell will continue to burn in next time step
+# change the value to change the boundary of fire
+p_continue_burn = 0.9
 
 # Quick switch for factors in the model, turn on: True, turn off: False
 wind = False
 vegetation = False
 density = False
 altitude = False
+
+# ------------- Quick Change End---------------------------------------
+
+n_row = n_row_total // size + 2
 
 thetas = [[45, 0, 45],
           [90, 0, 90],
@@ -54,6 +72,12 @@ def init_vegetation():
         for i in range(n_row):
             for j in range(n_col):
                 veg_matrix[i][j] = 1
+    else:
+        for i in range(n_row):
+            for j in range(n_col):
+                if j <= n_col//3 : veg_matrix[i][j] = 1
+                elif j <= n_col*2//3: veg_matrix[i][j] = 2
+                else: veg_matrix[i][j] = 3
     return veg_matrix
 
 
@@ -63,6 +87,12 @@ def init_density():
         for i in range(n_row):
             for j in range(n_col):
                 den_matrix[i][j] = 1
+    else:
+        for i in range(n_row):
+            for j in range(n_col):
+                if j <= n_col//3: den_matrix[i][j] = 1
+                elif j <= n_col*2//3: den_matrix[i][j] = 2
+                else: den_matrix[i][j] = 3
     return den_matrix
 
 
@@ -72,6 +102,10 @@ def init_altitude():
         for i in range(n_row):
             for j in range(n_col):
                 alt_matrix[i][j] = 1
+    else:
+        for i in range(n_row):
+            for j in range(n_col):
+                alt_matrix[i][j] = j
     return alt_matrix
 
 
@@ -215,8 +249,8 @@ def update_forest(old_forest):
             if old_forest[row][col] == 1 or old_forest[row][col] == 4:
                 result_forest[row][col] = old_forest[row][col]  # no fuel or burnt down
             if old_forest[row][col] == 3:
-                if random.random() < 0.4:
-                    result_forest[row][col] = 3  # TODO need to change back here
+                if random.random() < p_continue_burn:
+                    result_forest[row][col] = 3  # We can change here to control the burning time
                 else:
                     result_forest[row][col] = 4
             if old_forest[row][col] == 2:
@@ -256,6 +290,7 @@ time.sleep(1)
 ims = []
 # for i in tqdm(range(generation)):
 for i in range(generation):  # tqdm will damage the visualization in Terminal
+
     sub_forest = copy.deepcopy(update_forest(sub_forest))
     # [parallel] message passing function
     if rank == 0:
@@ -267,15 +302,19 @@ for i in range(generation):  # tqdm will damage the visualization in Terminal
         msg_down(sub_forest)
 
     # transform the list to np array so we can use np.vstack later
-    np_temp_grid = np.array(sub_forest[1:n_row - 1])
-    temp_grid = comm.gather(np_temp_grid, root=0)
+    # np_temp_grid = np.array(sub_forest[1:n_row - 1])
+    # temp_grid = comm.gather(np_temp_grid, root=0)
+    temp_grid = comm.gather(sub_forest[1:n_row - 1], root=0)
 
     # [parallel] only worker 0 do the visualize
 
     if rank == 0:
-        new_forest = np.vstack(temp_grid)
+
+        list_forest = list(itertools.chain.from_iterable(temp_grid))
 
         if visual:
+            print(i, "/", generation)
+            new_forest = np.vstack(list_forest)
             im = plt.imshow(new_forest, animated=True, interpolation="none", cmap=cm.plasma)
             # plt.title(i)
             ims.append([im])
@@ -284,7 +323,7 @@ for i in range(generation):  # tqdm will damage the visualization in Terminal
             # os.system("clear")
             time.sleep(1)
             print("-----------Generation:", i, "---------------")
-            list_forest = new_forest.tolist()
+            # list_forest = new_forest.tolist()
             # print (list_forest)
             print_forest(i,list_forest)
             # for components_of_forest in list_forest:
