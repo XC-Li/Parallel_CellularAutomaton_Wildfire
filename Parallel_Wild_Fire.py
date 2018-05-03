@@ -1,13 +1,13 @@
 # Wild Fire Simulation
 
-import os
+# import os
 import sys
 import time
 import math
 import random
 import copy
 import numpy as np
-from tqdm import tqdm
+# from tqdm import tqdm
 
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
