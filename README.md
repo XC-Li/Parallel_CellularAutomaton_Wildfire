@@ -7,7 +7,7 @@ In order to achieve best compatibility, this program only needs very basic prere
 
 However, to generate a better visualization, this program needs additional packages.
 1. numpy
-2. matplotlib
+2. matplotlib  
 If the program failed to import these two packages, then it will automatically run in pure text mode.
 
 ## Usage
@@ -43,8 +43,64 @@ Or you can do some custom changes on the environment initial functions:
 After loading the module, you can use `mpirun -n [n] python Parallel_Wild_Fire.py` to run this code.
 You can specify the number of workers in `n` if you have multiple CPU.
 
-## Model and Implimentation
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-居中格式: $$xxx$$
-$$x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$$
+## Maths Model
+The model we use here is based on the research paper: "A cellular automata model for forest fire spread prediction: The case
+of the wildfire that swept through Spetses Island in 1990"
+
+Each cell has 4 states:
+State = 1: The cell contains no forest fuel. This state may describe the cells corresponding to parts of the city with no vegetation,
+rural areas with no vegetation etc. We assume that cells that are in this state cannot be burned.
+State = 2: The cell contains forest fuel that has not ignited.
+State = 3: The cell contains forest fuel that is burning.
+State = 4: The cell contained forest fuel that has been burned down.
+
+These 4 states changes under these 4 rules:
+Rule 1: IF state (i,j,t) = 1 THEN state (i,j,t + 1) = 1.
+This rule implies that the state of a cell with no forest fuel (empty cell) remains the same and thus it cannot catch fire.
+Rule 2: IF state (i,j,t) = 3 THEN state (i,j,t + 1) = 4. 
+This rule implies that a burning cell at the current time step will be burned down at the next time step.
+Rule 3: IF state (i,j,t) = 4 THEN state (i,j,t + 1) = 4.
+This rule implies that the state of an empty cell that has been burned down in the previous step stays the same.
+Rule 4: IF state (i,j,t) = 3 THEN state (i ± 1, j ± 1, t + 1) = 3 with a probability pburn.
+**I changed Rule to IF state (i,j,t) = 3 THEN state (i,j,t + 1) = 4 with probability `1-p_continue_burn`**
+
+And we used the following formulas to determine p<sub>burn</sub>:
+p<sub>burn</sub>=p<sub>h</sub>(1+p<sub>veg</sub>)(1+p<sub>den</sub>)p<sub>w</sub>p<sub>s</sub>  
+**Effect of the wind speed and direction    **
+p<sub>w</sub> = exp(c<sub>1</sub>V)f<sub>t</sub>,   
+f<sub>t</sub> = exp(Vc<sub>2</sub>(cos(&theta;)-1))  
+&theta; is the angle between the direction of the fire propagation and the direction
+of the wind.  
+**Effect of the ground elevation  **
+P<sub>s</sub> = exp(a&theta;<sub>s</sub>)  
+&theta;<sub>s</sub> = tan-1[(E<sub>1</sub>-E<sub>2</sub>)/l]
+
+Table for p<sub>den</sub>:
+
+|Category|Density|p<sub>den</sub>|
+|----|----|----|
+|1|Sparse|-0.4|
+|2|Normal|0|
+|3|Dense|0.3|
+
+Table for p<sub>veg</sub>
+
+|Category|Type|p<sub>veg</sub>|
+|----|----|----|
+|1|Argicultural|-0.3|
+|2|Thickets|0|
+|3|Hallepo-pine|0.4|
+
+Other parameters
+
+|Parameter|Value|
+|----|----|
+|p<sub>h</sub>|0.58|
+|a|0.078|
+|c<sub>1</sub>|0.045|
+|c<sub>2</sub>|0.131|
+
+## Implementation
+
+
 ## Parallel Version
