@@ -1,4 +1,7 @@
 # Wildfire simulation using paralleled cellular automaton
+Simulation of wildfire using cellular automaton and used mpi4py to parallel the program.   
+Final Project for High Performance Computing and Parallel Computing  
+May.2018  
 
 ## Environment Specification
 In order to achieve best compatibility, this program only needs very basic prerequisite.
@@ -11,6 +14,12 @@ However, to generate a better visualization, this program needs additional packa
 If the program failed to import these two packages, then it will automatically run in pure text mode.
 
 ## Usage
+
+### Run the code:
+Clone the code from github using:`git clone https://github.com/XC-Li/Parallel_CellularAutomaton_Wildfire.git`   
+After loading the module(openmpi and python), you can use `mpirun -n [n] python Parallel_Wild_Fire.py` to run this code.
+You can specify the number of workers in `n` if you have multiple CPU.
+
 ### Easiest place to change
 This program is carefully designed, so the places you can change is very few.
 The easiest part to change is surrounded by `-----Quick Change-----`.
@@ -39,9 +48,14 @@ Or you can do some custom changes on the environment initial functions:
 
 **Please don't change anything below the line `Do not change anything below this line`**
 
-### Run the code:
-After loading the module, you can use `mpirun -n [n] python Parallel_Wild_Fire.py` to run this code.
-You can specify the number of workers in `n` if you have multiple CPU.
+
+## Parallel Programming is the key to save time
+![](images/effect_of_parallel.JPG)  
+<img src="images/c1.JPG" width="400" height="300">  
+Based on the experiment on GW's high-performance computing cluster colonial one, I found the execution time of this program is inversely proportional with the number of parallel workers.   
+And the execution time has a linear relation with the number of rows that each worker has to compute.  
+Which shows parallel computing can greatly reduce execution time when the problem is parallelable.  
+
 
 ## Interesting Findings
 No special environment: boundary of fire is round(Visualize in matplotlab and pure text)
@@ -68,10 +82,10 @@ All of the environment factor is on: `altitude` and `wind` are the most powerful
 
 
 
-# Technical Detail
-## Cellular Automaton Model
-The model I use here is based on the research paper: "A cellular automata model for forest fire spread prediction: The case
-of the wildfire that swept through Spetses Island in 1990"  
+## Technical Detail
+### Cellular Automaton Model
+The model I use here is based on the research paper: ["A cellular automata model for forest fire spread prediction: The case
+of the wildfire that swept through Spetses Island in 1990"  ](https://github.com/XC-Li/Parallel_CellularAutomaton_Wildfire/blob/master/A%20cellular%20automata%20model%20for%20forest%20fire%20spread%20prediction%20The%20case%20of%20the%20wildfire%20that%20swept%20through%20Spetses%20Island%20in%201990.pdf)
 
 Each cell has 4 states:  
 State = 1: The cell contains no forest fuel. This state may describe the cells corresponding to parts of the city with no vegetation,
@@ -128,11 +142,11 @@ P<sub>s</sub> = exp(a&theta;<sub>s</sub>)
 |c<sub>1</sub>|0.045|
 |c<sub>2</sub>|0.131|
 
-## Implementation
+### Implementation
 I implemented the model in the research paper to the code, and this is the structure of the program. 
 ![png](/images/Program_Structure.png)
 
-## Parallel Design
+### Parallel Design
 The idea of parallel with MPI(Message Passing Interface) is also simple:
 1. Assign a part of the full grid to each worker.
 ![png](images/parallel_design.png)
