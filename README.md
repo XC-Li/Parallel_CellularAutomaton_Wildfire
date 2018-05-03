@@ -45,6 +45,7 @@ You can specify the number of workers in `n` if you have multiple CPU.
 
 ## Interesting Findings
 
+<img src="images/no_special_environment.gif" width="300" height="300">
 
 # Technical Detail
 ## Cellular Automaton Model
