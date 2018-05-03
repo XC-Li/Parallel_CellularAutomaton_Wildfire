@@ -41,7 +41,7 @@ if visual:
 
 # ------------ Change the code below here for different initial environment ---------
 
-# -------------Quick Change Begin
+# -------------Quick Change Begin-------------------------
 # number of rows and columns of full grid and the generations
 n_row_total = 300
 n_col = 300
@@ -49,7 +49,7 @@ generation = 300
 
 # the possibility a cell will continue to burn in next time step
 # change the value to change the boundary of fire
-p_continue_burn = 0.9
+p_continue_burn = 0.5
 
 # Quick switch for factors in the model, turn on: True, turn off: False
 wind = False
