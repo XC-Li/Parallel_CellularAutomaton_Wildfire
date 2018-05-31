@@ -3,6 +3,9 @@ Simulation of wildfire using cellular automaton and used mpi4py to parallel the 
 Final Project for High Performance Computing and Parallel Computing  
 May.2018  
 
+If you like my work, feel free to click **star** or **fork** on the top-right corner for quick reference in the future.   
+![](/images/StarAndFork.JPG)
+
 ## Environment Specification
 In order to achieve best compatibility, this program only needs very basic prerequisite.
 1. Openmpi/3.0.0
